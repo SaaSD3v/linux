@@ -16,7 +16,6 @@
  * Do not add Qualcomm board IDs without confirming lk2nd DTB matching:
  * the experimental lk2nd accepts one non-skales appended DTB as fallback.
  */
- */
 /dts-v1/;
 
 #include "msm8953.dtsi"
