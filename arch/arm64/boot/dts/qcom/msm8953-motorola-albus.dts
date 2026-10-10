@@ -7,8 +7,15 @@
  *
  * The PM8953 regulator topology and MSM8953 controller definitions come
  * from the existing Motorola MSM8953 device trees in this kernel.
- * Board-specific GPIOs, display panels, board IDs and WCNSS variants
- * are intentionally not guessed from other Motorola devices.
+ * Albus-specific USB selection (FSUSB42) and ramoops reservation are based
+ * on Alberto97/android_kernel_motorola_msm8953, pie:
+ * arch/arm/boot/dts/qcom/msm8953-{moto-common,albus}.dtsi.
+ * The FUSB302 Type-C controller and HD3SS460 switch are not enabled until
+ * their VBUS supply and routing can be modeled with mainline bindings.
+ * Keep this file board-local: Channel/Deen/Sanders use different hardware.
+ * Do not add Qualcomm board IDs without confirming lk2nd DTB matching:
+ * the experimental lk2nd accepts one non-skales appended DTB as fallback.
+ */
  */
 /dts-v1/;
 
@@ -31,6 +38,21 @@
 		stdout-path = "serial0:115200n8";
 	};
 
+	/*
+	 * Stock Motorola MSM8953 reserves ef000000-ef0bffff for persistent
+	 * crash logs. This stays local to Albus; it must not be copied to
+	 * other boards without confirming their reserved-memory layout.
+	 */
+	reserved-memory {
+		ramoops@ef000000 {
+			compatible = "ramoops";
+			reg = <0x0 0xef000000 0x0 0xc0000>;
+			console-size = <0x40000>;
+			pmsg-size = <0x40000>;
+			record-size = <0x3f800>;
+		};
+	};
+
 	vph_pwr: regulator-vph-pwr {
 		compatible = "regulator-fixed";
 		regulator-name = "vph_pwr";
@@ -44,6 +66,25 @@
 	vdda-pll-supply = <&pm8953_l7>;
 	vdda-phy-dpdm-supply = <&pm8953_l13>;
 	status = "okay";
+};
+
+/*
+ * The Albus FSUSB42 shares the external USB-C connector with Moto Mods.
+ * Stock wiring: FSUSB42 selection is PM8953 GPIO6 (zero-based GPIO5).
+ * Stock fsusb42_mux.c: FSUSB_STATE_USB drives selection LOW; HIGH
+ * selects another path or powers the switch off.
+ *
+ * Keep the wired USB path connected to the application processor until
+ * a fully modeled Type-C/USB-mux solution is available. This alone does
+ * not implement FUSB302 power-role negotiation or the HD3SS460 switch.
+ */
+&pm8953_gpios {
+	albus_usb_select_hog: usb-select-hog {
+		gpio-hog;
+		gpios = <5 GPIO_ACTIVE_HIGH>;
+		output-low;
+		line-name = "albus-usb-select";
+	};
 };
 
 &rpm_requests {
