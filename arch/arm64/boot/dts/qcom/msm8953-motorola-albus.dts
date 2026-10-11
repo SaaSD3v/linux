@@ -13,8 +13,9 @@
  * The FUSB302 Type-C controller and HD3SS460 switch are not enabled until
  * their VBUS supply and routing can be modeled with mainline bindings.
  * Keep this file board-local: Channel/Deen/Sanders use different hardware.
- * Do not add Qualcomm board IDs without confirming lk2nd DTB matching:
- * the experimental lk2nd accepts one non-skales appended DTB as fallback.
+ * Stock Motorola's separate QCDT boot images use MSM8953 ID 293 and the
+ * seven Albus platform/subtype IDs from downstream msm8953-albus-p*.dts.
+ * These IDs are Albus-only; no Sanders/Channel IDs belong here.
  */
 /dts-v1/;
 
@@ -25,6 +26,15 @@
 / {
 	model = "Motorola Moto Z2 Play";
 	compatible = "motorola,albus", "qcom,msm8953";
+	/* Qualcomm LK DTB matching for Albus p0, p1, p1a1, p1b, p2, p3, p4. */
+	qcom,msm-id = <293 0>;
+	qcom,board-id = <0x48 0x8000>,
+			<0x48 0x81a0>,
+			<0x48 0x81a1>,
+			<0x49 0x81b0>,
+			<0x49 0x8200>,
+			<0x4a 0x8300>,
+			<0x4a 0x8400>;
 	chassis-type = "handset";
 
 	aliases {
@@ -232,6 +242,13 @@
 	status = "okay";
 };
 
+/* Until FUSB302/HD3SS460 are described, make the USB gadget mode
+ * explicit rather than waiting for an unimplemented Type-C role switch.
+ * This does not supply VBUS or initialize the physical Type-C mux.
+ */
 &usb3 {
+	/delete-property/ usb-role-switch;
+	/delete-property/ role-switch-default-mode;
+	dr_mode = "peripheral";
 	status = "okay";
 };
