@@ -54,8 +54,8 @@
 		 * Reuse the continuous-splash framebuffer until an Albus DSI
 		 * panel driver is available. The stock/lk2nd Albus panel is
 		 * 1080x1920 RGB888; msm8953.dtsi reserves the 0x90001000
-		 * splash region. This mirrors the proven msm8953/Channel
-		 * simplefb bring-up path without borrowing their panel drivers.
+		 * splash region. This follows the framebuffer approach in
+		 * SDM632 Channel and MSM8953 Potter, without reusing their panels.
 		 *
 		 * The bootloader must have initialized the panel for pixels
 		 * to remain visible. No guarantee for every Albus panel revision.
